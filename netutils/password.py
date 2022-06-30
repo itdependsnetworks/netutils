@@ -174,16 +174,13 @@ def decrypt_type7(encrypted_password: str) -> str:
 @_fail_on_mac
 def encrypt_type5(unencrypted_password: str, salt: t.Optional[str] = None, salt_len: int = 4) -> str:
     """Given an unencrypted password of Cisco Type 5 password, encrypt it.
-
     Args:
         unencrypted_password: A password that has not been encrypted, and will be compared against.
         salt: A random set of characters that can be set by the operator. Defaults to random generated one.
         salt_len: The number of random set of characters, when not manually set. Defaults to 4.
-
     Returns:
         The encrypted password.
-
-    Example:
+    Examples:
         >>> from netutils.password import encrypt_type5
         >>> encrypt_type5("cisco")  # doctest: +SKIP
         '$1$MHkb$v2MFmDkQX66TTxLkFF50K/'
@@ -205,6 +202,7 @@ def encrypt_type7(unencrypted_password: str, salt: t.Optional[int] = None) -> st
 
     Returns:
         The encrypted password.
+        str (optional): The encrypted password.
 
     Example:
         >>> from netutils.password import encrypt_type7
