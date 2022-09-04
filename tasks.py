@@ -135,7 +135,7 @@ def pytest(context, local=INVOKE_LOCAL):
         context (obj): Used to run specific commands
         local (bool): Define as `True` to execute locally
     """
-    exec_cmd = "pytest -vv --doctest-modules netutils/ && coverage run --source=netutils -m pytest && coverage report"
+    exec_cmd = "pytest -vv tests/unit/test_parser.py::test_find_children_w_parents"
     run_cmd(context, exec_cmd, local)
 
 
@@ -279,3 +279,21 @@ def clean_docs(context, builddir="docs/build"):
     """
     print(f"Removing everything under {builddir} directory...")
     context.run("rm -rf " + builddir)
+
+
+@task
+def clean_containers(context):
+    """Removes the unused `netutils` containers.
+
+    Args:
+        context (obj): Used to run specific commands
+    """
+    get_containers = """docker ps --filter "status=exited" | grep netutils | awk '{print $1}'"""
+    print(f"Running command: {get_containers}")
+    output = context.run(get_containers, pty=True)
+    if not output.stdout:
+        print("No containers to clean up")
+        return
+    command = f"""docker rm $({get_containers})"""
+    print(f"Running command: {command}")
+    context.run(command, pty=True)

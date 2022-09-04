@@ -1,0 +1,6 @@
+{
+    "parent_pattern": "interface",
+    "child_pattern": "no ip",
+    "match_type": "startswith",
+    "trim": true
+}

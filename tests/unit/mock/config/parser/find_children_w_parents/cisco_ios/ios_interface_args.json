@@ -1,0 +1,5 @@
+{ 
+    "parent_pattern": "interface GigabitEthernet1",
+    "child_pattern": " no mop",
+    "match_type": "startswith"
+}

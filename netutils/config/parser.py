@@ -332,8 +332,10 @@ class BaseSpaceConfigParser(BaseConfigParser):
         return self.config_lines
 
     @staticmethod
-    def _match_type_check(line: str, pattern: str, match_type: str) -> bool:
+    def _match_type_check(line: str, pattern: str, match_type: str, trim: bool) -> bool:
         """Checks pattern for exact match or regex."""
+        if trim:
+            line = line.strip()
         if match_type == "exact" and line == pattern:
             return True
         if match_type == "startswith" and line.startswith(pattern):
@@ -344,12 +346,41 @@ class BaseSpaceConfigParser(BaseConfigParser):
             return True
         return False
 
-    def find_all_children(self, pattern: str, match_type: str = "exact") -> t.List[str]:
+    def find_blocks(self, pattern: str, match_type: str = "exact", trim: bool = False) -> t.List[str]:
+        """Returns the matched lines, all parents, children, and sibling of matched lines, but not children of siblings.
+
+        Args:
+            pattern: pattern that describes parent.
+            match_type (optional): Exact or regex. Defaults to "exact".
+            trim (optional): Trim whitespace when evaluating. Defaults to False.
+
+        Returns:
+            configuration under that parent pattern.
+        """
+        config = []
+        matched = []
+        for cfg_line in self.build_config_relationship():
+            if self._match_type_check(cfg_line.config_line, pattern, match_type, trim):
+                matched.append(cfg_line)
+        sibling_check = [matched]
+
+        for cfg_line in self.build_config_relationship():
+            parents = cfg_line.parents[0] if cfg_line.parents else None
+            if (
+                parents
+                and self._match_type_check(parents, pattern, match_type, trim)
+                or self._match_type_check(cfg_line.config_line, pattern, match_type, trim)
+            ):
+                config.append(cfg_line.config_line)
+        return config
+
+    def find_all_children(self, pattern: str, match_type: str = "exact", trim: bool = False) -> t.List[str]:
         """Returns configuration part for a specific pattern not including parents.
 
         Args:
             pattern: pattern that describes parent.
             match_type (optional): Exact or regex. Defaults to "exact".
+            trim (optional): Trim whitespace when evaluating. Defaults to False.
 
         Returns:
             configuration under that parent pattern.
@@ -368,21 +399,86 @@ class BaseSpaceConfigParser(BaseConfigParser):
             parents = cfg_line.parents[0] if cfg_line.parents else None
             if (
                 parents
-                and self._match_type_check(parents, pattern, match_type)
-                or self._match_type_check(cfg_line.config_line, pattern, match_type)
+                and self._match_type_check(parents, pattern, match_type, trim)
+                or self._match_type_check(cfg_line.config_line, pattern, match_type, trim)
             ):
                 config.append(cfg_line.config_line)
         return config
 
+    # def find_all_children(self, pattern: str, match_type: str = "exact", trim: bool = False) -> t.List[str]:
+    #     """Returns configuration part for a specific pattern not including parents and only if first level child.
+
+    #     Args:
+    #         pattern: pattern that describes parent.
+    #         match_type (optional): Exact or regex. Defaults to "exact".
+
+    #     Returns:
+    #         configuration under that parent pattern.
+    #     Example:
+    #         >>> config = '''
+    #         ... router bgp 45000
+    #         ...   address-family ipv4 unicast
+    #         ...    neighbor 192.168.1.2 activate
+    #         ...    network 172.17.1.0 mask'''
+    #         >>> bgp_conf = BaseSpaceConfigParser(str(config)).find_all_children(pattern="router bgp", match_type="startswith")
+    #         >>> print(bgp_conf)
+    #         ['router bgp 45000', '  address-family ipv4 unicast', '   neighbor 192.168.1.2 activate', '   network 172.17.1.0 mask']
+    #     """
+    #     config = []
+    #     for cfg_line in self.build_config_relationship():
+    #         if len(cfg_line.parents) == 1 and self._match_type_check(cfg_line.config_line, pattern, match_type, trim):
+    #             config.append(cfg_line.config_line)
+    #     return config
+
+    # def find_blocks():
+    # def find_children():
+    # def find_interface_objects():
+    # def find_lineage():
+    # def find_lines():
+    # def find_object_branches():
+    # def find_objects():
+    # def find_objects_dna():
+    # def find_objects_w_all_children():
+    # def find_objects_w_child():
+    # def find_objects_w_missing_children():
+    # def find_objects_w_parents():
+    # def find_objects_wo_child():
+    # def find_parents_w_child():
+    # def find_parents_wo_child():
+
+    # def find_children_w_parents(
+    #     self, parent_pattern: str, child_pattern: str, match_type: str = "exact", trim: bool = False
+    # ) -> t.List[str]:
+    #     """Returns configuration part for a specific pattern including parents and children.
+
+    #     Args:
+    #         parent_pattern: pattern that describes parent.
+    #         child_pattern: pattern that describes child.
+    #         match_type (optional): Exact or regex. Defaults to "exact".
+
+    #     Returns:
+    #         configuration under that parent pattern.
+    #     Example:
+    #         >>> config = '''
+    #         ... router bgp 45000
+    #         ...   address-family ipv4 unicast
+    #         ...    neighbor 192.168.1.2 activate
+    #         ...    network 172.17.1.0 mask'''
+    #         >>> bgp_conf = BaseSpaceConfigParser(str(config)).find_children_w_parents(parent_pattern="router bgp", child_pattern="  address-family", match_type="regex")
+    #         >>> print(bgp_conf)
+    #         ['  address-family ipv4 unicast', '   neighbor 192.168.1.2 activate', '   network 172.17.1.0 mask']
+    #     """
+
     def find_children_w_parents(
-        self, parent_pattern: str, child_pattern: str, match_type: str = "exact"
+        self, parent_pattern: str, child_pattern: str, match_type: str = "exact", trim: bool = False
     ) -> t.List[str]:
-        """Returns configuration part for a specific pattern including parents and children.
+        """Returns configuration part for a specific pattern for parent and children, returning only the matching children.
 
         Args:
             parent_pattern: pattern that describes parent.
             child_pattern: pattern that describes child.
-            match_type (optional): Exact or regex. Defaults to "exact".
+            match_type (optional): exact|startswith|endswith|regex. Defaults to "exact".
+            trim (optional): Trim whitespace when evaluating. Defaults to False.
 
         Returns:
             configuration under that parent pattern.
@@ -400,11 +496,13 @@ class BaseSpaceConfigParser(BaseConfigParser):
         potential_parents = [
             elem.parents[0]
             for elem in self.build_config_relationship()
-            if self._match_type_check(elem.config_line, child_pattern, match_type)
+            if elem.parents and self._match_type_check(elem.parents[0], parent_pattern, match_type, trim)
         ]
         for cfg_line in self.build_config_relationship():
             parents = cfg_line.parents[0] if cfg_line.parents else None
-            if parents in potential_parents and self._match_type_check(parents, parent_pattern, match_type):
+            if parents in potential_parents and self._match_type_check(
+                cfg_line.config_line, child_pattern, match_type, trim
+            ):
                 config.append(cfg_line.config_line)
         return config
 

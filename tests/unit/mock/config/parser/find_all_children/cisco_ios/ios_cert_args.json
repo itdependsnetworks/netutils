@@ -1,0 +1,4 @@
+{ 
+    "pattern": "crypto pki",
+    "match_type": "regex"
+}

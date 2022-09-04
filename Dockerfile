@@ -4,7 +4,6 @@ FROM python:${PYTHON_VER}-slim
 
 RUN pip install --upgrade pip \
   && pip install poetry
-
 WORKDIR /local
 COPY . /local
 
