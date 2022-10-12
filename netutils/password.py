@@ -97,7 +97,7 @@ def compare_type5(
     Returns:
         Whether or not the password is as compared to.
 
-    Example:
+    Examples:
         >>> from netutils.password import compare_type5
         >>> compare_type5("cisco","$1$nTc1$Z28sUTcWfXlvVe2x.3XAa.")
         True
@@ -126,7 +126,7 @@ def compare_type7(
     Returns:
         Whether or not the password is as compared to.
 
-    Example:
+    Examples:
         >>> from netutils.password import compare_type7
         >>> compare_type7("cisco","121A0C041104")
         True
@@ -150,7 +150,7 @@ def decrypt_type7(encrypted_password: str) -> str:
     Returns:
         The unencrypted_password password.
 
-    Example:
+    Examples:
         >>> from netutils.password import decrypt_type7
         >>> decrypt_type7("121A0C041104")
         'cisco'
@@ -236,7 +236,7 @@ def get_hash_salt(encrypted_password: str) -> str:
     Returns:
         The encrypted password.
 
-    Example:
+    Examples:
         >>> from netutils.password import get_hash_salt
         >>> get_hash_salt('$1$ZLGo$J.gAGxS2wqO96drs0Cith/')
         'ZLGo'
