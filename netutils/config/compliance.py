@@ -14,6 +14,7 @@ parser_map: t.Dict[str, t.Type[parser.BaseConfigParser]] = {
     "cisco_asa": parser.ASAConfigParser,
     "cisco_ios": parser.IOSConfigParser,
     "cisco_iosxr": parser.IOSXRConfigParser,
+    "cisco_xr": parser.IOSXRConfigParser,
     "cisco_nxos": parser.NXOSConfigParser,
     "citrix_netscaler": parser.NetscalerConfigParser,
     "extreme_netiron": parser.NetironConfigParser,
